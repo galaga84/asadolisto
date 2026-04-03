@@ -3,6 +3,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
+import { AdBanner } from "../../components/AdBanner";
 import { DateTimeField } from "../../components/DateTimeField";
 import { getSavedAsadoById, saveAsado, setActiveAsadoId, type SavedShoppingGroup } from "../../lib/asado-store";
 
@@ -557,8 +558,9 @@ export default function AsadosScreen() {
       }));
     });
 
-    const vegetablesKg =
-      vegetarians * 0.35 * appetiteFactor + (selectedVegetables ? Math.max(totalAttendees - vegetarians, 0) * 0.08 * appetiteFactor : 0);
+    const vegetablesKg = selectedVegetables
+      ? vegetarians * 0.35 * appetiteFactor + Math.max(adultsEatingProtein + kids, 0) * 0.08 * appetiteFactor
+      : 0;
     const vegetableValues = selectedVegetables ? splitAmount(vegetablesKg, selectedVegetables.items.length) : [];
     const vegetableEntries =
       selectedVegetables && vegetablesKg > 0
@@ -1296,6 +1298,8 @@ export default function AsadosScreen() {
               <Text style={styles.metricValue}>{toLiterLabel(shoppingResults.alcoholLiters)}</Text>
             </View>
           </View>
+
+          <AdBanner />
 
           {hasAnyResults ? (
             <View style={styles.summarySection}>

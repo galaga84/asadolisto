@@ -2,6 +2,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { AdBanner } from "../../components/AdBanner";
 import { deleteAsado, getSavedAsados, setActiveAsadoId, type SavedAsado } from "../../lib/asado-store";
 
 const ASADOS_PER_PAGE = 6;
@@ -156,6 +157,8 @@ export default function MisAsadosScreen() {
         <Text style={styles.title}>Mis asados</Text>
         <Text style={styles.text}>Aquí verás cada asado que armes con su fecha, lugar y resumen de compra.</Text>
       </View>
+
+      <AdBanner />
 
       {loading ? (
         <View style={styles.emptyCard}>

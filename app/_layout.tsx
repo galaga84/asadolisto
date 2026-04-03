@@ -1,7 +1,10 @@
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
+import { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+
+import { initializeMobileAdsIfSupported } from "../lib/mobile-ads";
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -11,6 +14,10 @@ export default function RootLayout() {
     Newsreader_600SemiBold: require("../node_modules/@expo-google-fonts/newsreader/600SemiBold/Newsreader_600SemiBold.ttf"),
     Newsreader_700Bold: require("../node_modules/@expo-google-fonts/newsreader/700Bold/Newsreader_700Bold.ttf")
   });
+
+  useEffect(() => {
+    void initializeMobileAdsIfSupported();
+  }, []);
 
   return (
     <SafeAreaProvider>
