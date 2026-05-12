@@ -15,15 +15,21 @@
       }
     },
     "production": {
+      "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
       }
     }
   },
   "submit": {
-    "production": {
+    "internal": {
       "android": {
         "track": "internal"
+      }
+    },
+    "production": {
+      "android": {
+        "track": "production"
       }
     }
   }

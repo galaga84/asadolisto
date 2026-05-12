@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useIsFocused } from "@react-navigation/native";
 import { LayoutChangeEvent, StyleSheet, Text, View } from "react-native";
 
 import { getBannerAdUnitId, getMobileAdsModule, supportsNativeAds } from "../lib/mobile-ads";
@@ -9,10 +10,24 @@ type AdBannerProps = {
 
 export function AdBanner({ label = "Publicidad" }: AdBannerProps) {
   const adsModule = useMemo(() => getMobileAdsModule(), []);
-  const [hasFailed, setHasFailed] = useState(false);
+  const isFocused = useIsFocused();
   const [frameWidth, setFrameWidth] = useState(0);
   const [adHeight, setAdHeight] = useState(0);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const unitId = getBannerAdUnitId();
+  const bannerSizes = adsModule ? [adsModule.BannerAdSize.LARGE_ANCHORED_ADAPTIVE_BANNER, adsModule.BannerAdSize.BANNER] : [];
+  const hasExhaustedAttempts = bannerSizes.length > 0 && loadAttempt >= bannerSizes.length;
+
+  useEffect(() => {
+    if (!isFocused || frameWidth <= 0 || !adsModule || !unitId) {
+      return;
+    }
+
+    setLoadAttempt(0);
+    setErrorMessage(null);
+    setAdHeight(0);
+  }, [adsModule, frameWidth, isFocused, unitId]);
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     const nextWidth = Math.floor(nativeEvent.layout.width);
@@ -34,25 +49,55 @@ export function AdBanner({ label = "Publicidad" }: AdBannerProps) {
     );
   }
 
-  if (!adsModule || !unitId || hasFailed) {
+  if (!adsModule || !unitId) {
     return null;
   }
 
-  const { BannerAd, BannerAdSize } = adsModule;
+  const { BannerAd } = adsModule;
+  const activeBannerSize = bannerSizes[Math.min(loadAttempt, bannerSizes.length - 1)];
+
+  if (hasExhaustedAttempts) {
+    if (!__DEV__) {
+      return null;
+    }
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.label}>{label}</Text>
+        <View style={styles.bannerPreview}>
+          <Text style={styles.previewTitle}>Anuncio no disponible por ahora</Text>
+          <Text style={styles.previewText}>
+            El banner no cargo todavia. Si la unidad es nueva o la app sigue en revision en AdMob, esto puede pasar durante las primeras horas o dias.
+          </Text>
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.card}>
       <Text style={styles.label}>{label}</Text>
       <View style={[styles.bannerFrame, adHeight > 0 && { minHeight: adHeight }]} onLayout={handleLayout}>
-        {frameWidth > 0 ? (
+        {frameWidth > 0 && isFocused ? (
           <BannerAd
-            key={`${unitId}-${frameWidth}`}
+            key={`${unitId}-${frameWidth}-${activeBannerSize}-${loadAttempt}`}
             unitId={unitId}
-            size={BannerAdSize.LARGE_ANCHORED_ADAPTIVE_BANNER}
+            size={activeBannerSize}
             width={frameWidth}
             requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-            onAdLoaded={(dimensions) => setAdHeight(dimensions.height)}
-            onAdFailedToLoad={() => setHasFailed(true)}
+            onAdLoaded={(dimensions) => {
+              setAdHeight(dimensions.height);
+              setErrorMessage(null);
+            }}
+            onAdFailedToLoad={(error) => {
+              const nextMessage = error.message?.trim() || "No pudimos cargar el anuncio.";
+
+              console.warn(`[AdMob] Banner failed to load (${activeBannerSize})`, error);
+              setAdHeight(0);
+              setErrorMessage(nextMessage);
+              setLoadAttempt((currentAttempt) => currentAttempt + 1);
+            }}
           />
         ) : null}
       </View>
@@ -102,6 +147,14 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontFamily: "Inter_400Regular",
     color: "#5B5563",
+    textAlign: "center"
+  },
+  errorText: {
+    marginTop: 10,
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: "Inter_400Regular",
+    color: "#7C2D12",
     textAlign: "center"
   },
   placeholderText: {

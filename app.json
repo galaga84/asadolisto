@@ -4,7 +4,7 @@
     "slug": "asadolisto",
     "scheme": "asadolisto",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
     "splash": {
@@ -15,6 +15,7 @@
     },
     "android": {
       "package": "com.galaga84.asadolisto",
+      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#09A1A1",
@@ -36,7 +37,7 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "androidAppId": "ca-app-pub-3129929434620804~2757272886",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
       ]
@@ -48,7 +49,7 @@
       },
       "ads": {
         "android": {
-          "banner": "ca-app-pub-3940256099942544/9214589741"
+          "banner": "ca-app-pub-3129929434620804/5454551009"
         },
         "ios": {
           "banner": "ca-app-pub-3940256099942544/2435281174"
